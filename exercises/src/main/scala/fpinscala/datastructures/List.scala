@@ -13,7 +13,8 @@ case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 object List {
   // `List` companion object. Contains functions for creating and working with lists.
-  def sum(ints: List[Int]): Int = ints match { // A function that uses pattern matching to add up a list of integers
+  def sum(ints: List[Int]): Int = ints match {
+    // A function that uses pattern matching to add up a list of integers
     case Nil => 0 // The sum of the empty list is 0.
     case Cons(x, xs) => x + sum(xs) // The sum of a list starting with `x` is `x` plus the sum of the rest of the list.
   }
@@ -100,16 +101,25 @@ object List {
   def map[A, B](l: List[A])(f: A => B): List[B] = sys.error("todo")
 
   def reverse[A](l: List[A]): List[A] =
-    foldLeft(l, Nil:List[A])((acc, h) => Cons(h, acc))
+    foldLeft(l, Nil: List[A])((acc, h) => Cons(h, acc))
 
   def foldLeftR[A, B](l: List[A], z: B)(f: (B, A) => B): B =
-    foldRight(reverse(l), z){(a, b) => println(s"f($b, $a)"); f(b, a)}
+    foldRight(reverse(l), z) { (a, b) => println(s"f($b, $a)"); f(b, a) }
 
-  def foldLeftByRight[A, B](l: List[A], z: B)(f: (B, A) => B): B = ???
+  // [DG] Lifted from answers - see comment beginning on line 177 in answers project
+  def foldLeftByRight[A, B](l: List[A], z: B)(f: (B, A) => B): B =
+    foldRight(l, (b: B) => b)((a, g) => b => g(f(b, a)))(z)
 
   def foldRightL[A, B](l: List[A], z: B)(f: (A, B) => B): B =
-    foldLeft(reverse(l), z){(b, a) => println(s"f($a, $b)"); f(a, b)}
+    foldLeft(reverse(l), z) { (b, a) => println(s"f($a, $b)"); f(a, b) }
 
-  def foldRightByLeft[A, B](l: List[A], z: B)(f: (A, B) => B): B = ???
+  // [DG] Lifted from answers - see comment beginning on line 177 in answers project
+  def foldRightByLeft[A, B](l: List[A], z: B)(f: (A, B) => B): B =
+    foldLeft(l, (b: B) => b)((g, a) => b => g(f(a, b)))(z)
 
+  def appendF[A](a1: List[A], a2: List[A]): List[A] =
+    foldRight(a1, a2)(Cons(_, _))
+
+  def concatenate[A](ls: List[List[A]]): List[A] =
+    foldLeft(ls, Nil: List[A])(append)
 }
