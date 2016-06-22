@@ -48,10 +48,10 @@ object List {
       case Cons(x, xs) => f(x, foldRight(xs, z)(f))
     }
 
-  def sum2(ns: List[Int]) =
+  def sumR(ns: List[Int]) =
     foldRight(ns, 0)((x, y) => x + y)
 
-  def product2(ns: List[Double]) =
+  def productR(ns: List[Double]) =
     foldRight(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
 
 
@@ -83,9 +83,33 @@ object List {
     case Cons(h, t) => Cons(h, init(t))
   }
 
-  def length[A](l: List[A]): Int = sys.error("todo")
+  def length[A](l: List[A]): Int =
+    foldRight(l, 0)((_, acc) => acc + 1)
 
-  def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = sys.error("todo")
+  def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = l match {
+    case Nil => z
+    case Cons(h, t) => foldLeft(t, f(z, h))(f)
+  }
+
+  def sumL(ns: List[Int]) =
+    foldLeft(ns, 0)(_ + _)
+
+  def productL(ns: List[Int]) =
+    foldLeft(ns, 1.0)(_ * _)
 
   def map[A, B](l: List[A])(f: A => B): List[B] = sys.error("todo")
+
+  def reverse[A](l: List[A]): List[A] =
+    foldLeft(l, Nil:List[A])((acc, h) => Cons(h, acc))
+
+  def foldLeftR[A, B](l: List[A], z: B)(f: (B, A) => B): B =
+    foldRight(reverse(l), z){(a, b) => println(s"f($b, $a)"); f(b, a)}
+
+  def foldLeftByRight[A, B](l: List[A], z: B)(f: (B, A) => B): B = ???
+
+  def foldRightL[A, B](l: List[A], z: B)(f: (A, B) => B): B =
+    foldLeft(reverse(l), z){(b, a) => println(s"f($a, $b)"); f(a, b)}
+
+  def foldRightByLeft[A, B](l: List[A], z: B)(f: (A, B) => B): B = ???
+
 }
