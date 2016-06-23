@@ -98,7 +98,10 @@ object List {
   def productL(ns: List[Int]) =
     foldLeft(ns, 1.0)(_ * _)
 
-  def map[A, B](l: List[A])(f: A => B): List[B] = sys.error("todo")
+  def map[A, B](l: List[A])(f: A => B): List[B] = l match {
+    case Nil => Nil
+    case Cons(h, t) => Cons(f(h), map(t)(f))
+  }
 
   def reverse[A](l: List[A]): List[A] =
     foldLeft(l, Nil: List[A])((acc, h) => Cons(h, acc))
@@ -122,4 +125,77 @@ object List {
 
   def concatenate[A](ls: List[List[A]]): List[A] =
     foldLeft(ls, Nil: List[A])(append)
+
+  def add1(ints: List[Int]): List[Int] = ints match {
+    case Nil => Nil
+    case Cons(h, t) => Cons(h + 1, add1(t))
+  }
+
+  def doublesToStrings(dubs: List[Double]): List[String] = dubs match {
+    case Nil => Nil
+    case Cons(h, t) => Cons(h.toString, doublesToStrings(t))
+  }
+
+  def filter[A](l: List[A])(f: A => Boolean): List[A] = l match {
+    case Nil => Nil
+    case Cons(h, t) =>
+      if (f(h)) Cons(h, filter(t)(f))
+      else filter(t)(f)
+  }
+
+  def flatMap[A,B](as: List[A])(f: A => List[B]): List[B] = as match {
+    case Nil => Nil
+    case Cons(h, t) => append(f(h), flatMap(t)(f))
+  }
+
+  def mapViaFold[A,B](as: List[A])(f: A => B): List[B] =
+    foldRight(as, Nil:List[B])((a,b) => Cons(f(a), b))
+
+  def filterViaFold[A](as: List[A])(f: A => Boolean): List[A] =
+    foldRight(as, Nil:List[A])((x,xs) => if (f(x)) Cons(x, xs) else xs)
+
+  def flatMapViaFold[A,B](as: List[A])(f: A => List[B]): List[B] =
+    foldRight(as, Nil:List[B])((a, bs) => append(f(a), bs))
+
+  def flatMapViaMap[A,B](as: List[A])(f: A => List[B]): List[B] =
+    concatenate(map(as)(f))
+
+  def filterViaFlatMap[A](as: List[A])(f: A => Boolean): List[A] =
+    flatMap(as)(a => if (f(a)) List(a) else Nil)
+
+  def addPairwise(as: List[Int], bs: List[Int]): List[Int] = as match {
+    case Nil => Nil
+    case Cons(ah, at) => bs match {
+      case Nil => Nil
+      case Cons(bh, bt) => Cons(ah + bh, addPairwise(at, bt))
+    }
+  }
+
+  def addPairwiseNicer(as: List[Int], bs: List[Int]): List[Int] = (as,bs) match {
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(a, at), Cons(b, bt)) => Cons(a + b, addPairwiseNicer(at, bt))
+  }
+
+  def zipWith[A,B,C](as: List[A], bs: List[B])(f: (A,B) => C): List[C] = (as, bs) match {
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(h1, t1), Cons(h2, t2)) => Cons(f(h1, h2), zipWith(t1, t2)(f))
+  }
+
+  // Pretty much stolen from answers
+  @annotation.tailrec
+  def startsWith[A](as: List[A], prefix: List[A]): Boolean = (as, prefix) match {
+    case (_, Nil) => true
+    case (Cons(h1, t1), Cons(h2, t2)) if h1 == h2 => startsWith(t1, t2)
+    case _ => false
+  }
+
+  // Pretty much stolen from answers
+  @annotation.tailrec
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = sup match {
+    case Nil => sub == Nil
+    case _ if startsWith(sup, sub) => true
+    case Cons(h, t) => hasSubsequence(t, sub)
+  }
 }
