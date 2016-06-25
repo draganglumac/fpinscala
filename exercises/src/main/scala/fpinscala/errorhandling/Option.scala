@@ -95,8 +95,17 @@ object Option {
     case h :: t => h flatMap (hh => sequence(t) map (hh :: _))
   }
 
+  // Half-stolen
   def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
     case Nil => Some(Nil)
     case ha :: ta => f(ha) flatMap (b => traverse(ta)(f) map (b :: _))
   }
+
+  // Stolen
+  def traverseViaFold[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] =
+    a.foldRight[Option[List[B]]](Some(Nil))((h, t) => map2(f(h), t)(_ :: _))
+
+  // Stolen
+  def sequenceViaTraverse[A](a: List[Option[A]]): Option[List[A]] =
+    traverse(a)(x => x)
 }
