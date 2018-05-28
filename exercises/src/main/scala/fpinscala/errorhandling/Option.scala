@@ -48,7 +48,7 @@ sealed trait Option[+A] {
     case Some(a) if f(a) => this
     case _ => None
   }
-
+  
   def lift[B >: A, C](f: B => C): Option[B] => Option[C] =
     _ map f
 }
